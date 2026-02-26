@@ -6,7 +6,7 @@ import { Settings } from 'lucide-react';
 const AdminShortcutButton = () => {
   const [showButton, setShowButton] = useState(false);
   const navigate = useNavigate();
-
+ 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Check for Ctrl+Shift+A
