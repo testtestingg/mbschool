@@ -14,7 +14,8 @@ import CalendarPage from './pages/CalendarPage';
 import TeacherPage from './pages/TeacherPage';
 import RegistrationPage from './pages/RegistrationPage';
 import AdminPage from './pages/AdminPage';
-import RecruitmentPage from './pages/RecruitmentPage'; // Add this import
+import RecruitmentPage from './pages/RecruitmentPage'; 
+import ArchiveBac from './pages/ArchiveBac'; // <-- Add this import
 import MathParallax from './components/MathParallax';
 import ScrollToTop from './ScrollToTop';
 import NotFound from './pages/NotFound';
@@ -68,6 +69,10 @@ function App() {
               <Route path="/services" element={<Services />} />
               <Route path="/خدماتنا" element={<Services />} />
               <Route path="/learning-challenge" element={<LearningChallenge />} />
+              
+              {/* Archive Bac Route */}
+              <Route path="/archives-bac" element={<ArchiveBac />} /> {/* <-- New Route */}
+
               {/* Registration Routes */}
               <Route path="/register" element={<Registration />} />
               <Route path="/registration" element={<Navigate to="/register" replace />} />
