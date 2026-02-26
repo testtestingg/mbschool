@@ -8,10 +8,6 @@ import {
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase directly for the public site
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 const YEARS = Array.from({ length: 37 }, (_, i) => (2026 - i).toString());
 const ITEMS_PER_PAGE = 20;
