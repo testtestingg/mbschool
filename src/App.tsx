@@ -10,18 +10,14 @@ import Contact from './pages/Contact';
 import Services from './pages/Services';
 import LearningChallenge from './pages/learning-challenge';
 import Registration from './pages/Registration';
-import CalendarPage from './pages/CalendarPage';
 import TeacherPage from './pages/TeacherPage';
 import RegistrationPage from './pages/RegistrationPage';
-import AdminPage from './pages/AdminPage';
 import RecruitmentPage from './pages/RecruitmentPage'; 
 import ArchiveBac from './pages/ArchiveBac'; // <-- Add this import
 import MathParallax from './components/MathParallax';
 import ScrollToTop from './ScrollToTop';
 import NotFound from './pages/NotFound';
 import { Analytics } from "@vercel/analytics/react";
-import AdminShortcutButton from './components/AdminShortcutButton';
-import SecureAdminRoute from './components/SecureAdminRoute';
 
 function App() {
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -76,12 +72,7 @@ function App() {
               {/* Registration Routes */}
               <Route path="/register" element={<Registration />} />
               <Route path="/registration" element={<Navigate to="/register" replace />} />
-              
-              {/* Calendar Page - handles its own authentication */}
-              <Route path="/calendar" element={<CalendarPage />} />
-              
-              {/* Admin Page - Changed to a more secure URL */}
-              <Route path="/secure-admin-dashboard-2024" element={<AdminPage />} />
+                            
               <Route path="/teacher" element={<TeacherPage />} />
               
               {/* Recruitment Page */}
@@ -93,9 +84,6 @@ function App() {
           </main>
           <Footer />
         </div>  
-        
-        {/* Admin Shortcut Button - This will appear on all pages */}
-        <AdminShortcutButton />
         
         {/* Vercel Web Analytics - tracks all page views automatically */}
         <Analytics />
