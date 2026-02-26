@@ -51,10 +51,16 @@ const ArchiveBac = () => {
     const loadMeta = async () => {
       try {
 const [levelsRes, sectionsRes] = await Promise.all([
-  supabase.from('education_levels').select('*').ilike('name_fr', '%bac%'),
+  supabase.from('education_levels').select('*'), // Fetch all, filter in JS
   supabase.from('sections').select('*')
 ]);
-setNiveaux(levelsRes.data || []);
+
+// Safely filter for "Bac" levels just like your platform does
+const bacLevels = (levelsRes.data || []).filter(l => 
+    l.name_fr?.toLowerCase().includes('bac') || 
+    l.name?.toLowerCase().includes('bac')
+);
+setNiveaux(bacLevels);
         setSections(sectionsRes.data || []);
       } catch (e) {
         console.error("Error loading meta:", e);
