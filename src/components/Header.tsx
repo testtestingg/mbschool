@@ -20,6 +20,7 @@ const navLinks = [
   { name: 'الرئيسية', path: '/' },
   { name: 'من نحن؟', path: '/about' },
   { name: 'خدماتنا', path: '/services' },
+  { name: 'أرشيف البكالوريا', path: '/archives-bac' }, // Added this line
   { name: 'سجّل الآن', path: '/register' },
 ];
 
