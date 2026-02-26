@@ -92,7 +92,7 @@ function App() {
             </Routes>
           </main>
           <Footer />
-        </div> 
+        </div>  
         
         {/* Admin Shortcut Button - This will appear on all pages */}
         <AdminShortcutButton />
