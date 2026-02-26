@@ -50,11 +50,11 @@ const ArchiveBac = () => {
   useEffect(() => {
     const loadMeta = async () => {
       try {
-        const [levelsRes, sectionsRes] = await Promise.all([
-          supabase.from('education_levels').select('*').ilike('name_fr', '%bac%'),
-          supabase.from('sections').select('*')
-        ]);
-        setNiveaux(levelsRes.data || []);
+const [levelsRes, sectionsRes] = await Promise.all([
+  supabase.from('education_levels').select('*').ilike('name_fr', '%bac%'),
+  supabase.from('sections').select('*')
+]);
+setNiveaux(levelsRes.data || []);
         setSections(sectionsRes.data || []);
       } catch (e) {
         console.error("Error loading meta:", e);
