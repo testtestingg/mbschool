@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/auth/
+Disallow: /temp/
+
+# Sitemap location
+Sitemap: https://mbschool.tn/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1  

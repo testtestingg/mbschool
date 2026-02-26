@@ -1,0 +1,465 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base setup */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  @apply border-border;
+}
+
+.ltr {
+  direction: ltr;
+}
+
+.rtl {
+  direction: rtl;
+}
+
+/* Custom properties for design system */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 201 75% 43%;
+    --primary-foreground: 210 40% 98%;
+    --primary-light: 201 65% 55%;
+    --primary-dark: 201 85% 35%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 201 75% 43%;
+    --primary-foreground: 210 40% 98%;
+    --primary-light: 201 65% 55%;
+    --primary-dark: 201 85% 35%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+/* Canvas container */
+.canvas-container {
+  width: 100%;
+  height: 150px;
+  position: relative;
+}
+
+.equation {
+  position: absolute;
+  opacity: 0.3;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.content-container {
+  position: relative;
+  z-index: 10;
+}
+
+.ink-text {
+  color: #333333;
+  text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.ink-text::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #333333 10%, #333333 90%, transparent);
+  opacity: 0.3;
+}
+
+/* Shine animation */
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(30deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(30deg);
+  }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.shine-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
+  animation: shine 3s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* Page-specific styles for Teacher and Learning pages only */
+/* These styles will only apply to elements with the page-specific classes */
+
+/* Teacher page specific styles */
+.teacher-page .card-shadow {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.3s ease;
+}
+
+.teacher-page .card-shadow:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.teacher-page .subject-card {
+  transition: all 0.3s ease;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.teacher-page .subject-card:hover {
+  transform: translateY(-5px);
+}
+
+.teacher-page .code-display {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+
+.teacher-page .table-container {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+}
+
+.teacher-page .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+/* Learning page specific styles */
+.learning-page .question-card {
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.learning-page .answer-option {
+  transition: all 0.2s ease;
+  border-radius: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.learning-page .answer-option:hover {
+  transform: translateX(-5px);
+}
+
+.learning-page .answer-option.correct {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-color: rgb(16, 185, 129);
+}
+
+.learning-page .answer-option.incorrect {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: rgb(239, 68, 68);
+}
+
+.learning-page .progress-ring {
+  transform: rotate(-90deg);
+}
+
+.learning-page .progress-ring-circle {
+  transition: stroke-dashoffset 0.35s;
+  stroke-dasharray: 440; /* 2 * π * 70 */
+  stroke-dashoffset: 440;
+}
+
+.learning-page .ai-assistant {
+  border-radius: 1rem;
+  overflow: hidden;
+  background-color: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.learning-page .ai-message {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.learning-page .results-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  font-weight: 700;
+  color: white;
+}
+
+.learning-page .results-badge.excellent {
+  background: linear-gradient(135deg, #10B981, #059669);
+}
+
+.learning-page .results-badge.very-good {
+  background: linear-gradient(135deg, #3B82F6, #2563EB);
+}
+
+.learning-page .results-badge.good {
+  background: linear-gradient(135deg, #6366F1, #4F46E5);
+}
+
+.learning-page .results-badge.needs-improvement {
+  background: linear-gradient(135deg, #EF4444, #DC2626);
+}
+
+/* Common styles for both pages */
+.teacher-page, .learning-page {
+  font-family: 'Tajawal', sans-serif;
+}
+
+.teacher-page .btn-primary, .learning-page .btn-primary {
+  background-color: rgb(29, 78, 216);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.teacher-page .btn-primary:hover, .learning-page .btn-primary:hover {
+  background-color: rgb(30, 64, 175);
+}
+
+.teacher-page .btn-primary::before, .learning-page .btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: -1;
+}
+
+.teacher-page .btn-primary:hover::before, .learning-page .btn-primary:hover::before {
+  transform: translateX(0);
+}
+
+.teacher-page .form-input, .learning-page .form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.teacher-page .form-input:focus, .learning-page .form-input:focus {
+  outline: none;
+  border-color: rgb(29, 78, 216);
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+}
+
+.teacher-page .floating-label, .learning-page .floating-label {
+  position: relative;
+}
+
+.teacher-page .floating-label input, .learning-page .floating-label input {
+  padding-top: 1.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.teacher-page .floating-label label, .learning-page .floating-label label {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  font-size: 1rem;
+  color: var(--muted-foreground);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.teacher-page .floating-label input:focus + label, 
+.teacher-page .floating-label input:not(:placeholder-shown) + label,
+.learning-page .floating-label input:focus + label, 
+.learning-page .floating-label input:not(:placeholder-shown) + label {
+  top: 0.5rem;
+  font-size: 0.75rem;
+  color: rgb(29, 78, 216);
+}
+
+.teacher-page .toast, .learning-page .toast {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  color: white;
+  font-weight: 500;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.3s ease-out;
+}
+
+.teacher-page .toast-success, .learning-page .toast-success {
+  background-color: rgb(16, 185, 129);
+}
+
+.teacher-page .toast-error, .learning-page .toast-error {
+  background-color: rgb(239, 68, 68);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translate(-50%, -100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.teacher-page .modal, .learning-page .modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.teacher-page .modal-content, .learning-page .modal-content {
+  background-color: white;
+  border-radius: 0.75rem;
+  max-width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.teacher-page .spinner, .learning-page .spinner {
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top: 3px solid white;
+  width: 1.5rem;
+  height: 1.5rem;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive container */
+.teacher-page .container, .learning-page .container {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 640px) {
+  .teacher-page .container, .learning-page .container {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .teacher-page .container, .learning-page .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .teacher-page .container, .learning-page .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .teacher-page .container, .learning-page .container {
+    max-width: 1280px;
+  }
+}
