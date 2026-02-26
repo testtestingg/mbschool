@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FileText, History as HistoryIcon, 
@@ -7,6 +7,9 @@ import {
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
+
+// Lazy load the PDF Viewer (Option 2)
+const PDFViewerWithChat = lazy(() => import('./PDFViewerWithChat').then(module => ({ default: module.PDFViewerWithChat })));
 
 const YEARS = Array.from({ length: 37 }, (_, i) => (2026 - i).toString());
 const ITEMS_PER_PAGE = 20;
@@ -33,7 +36,7 @@ const ArchiveBac = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   
-  // PDF Viewer State (Styled exactly like the platform)
+  // PDF Viewer State
   const [selectedExam, setSelectedExam] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState<'exam' | 'correction'>('exam');
 
@@ -46,6 +49,7 @@ const ArchiveBac = () => {
   
   const debounceTimeout = useRef<NodeJS.Timeout>();
 
+  // 1. Load Metadata
   useEffect(() => {
     const loadMeta = async () => {
       try {
@@ -89,6 +93,7 @@ const ArchiveBac = () => {
     return matchKey ? SUBJECTS_BY_SECTION[matchKey].sort() : ALL_SUBJECTS;
   }, [filterSection]);
 
+  // 2. Optimized Data Fetching (Fixes the Timeout Error)
   const fetchExams = useCallback(async (page = 1, append = false) => {
     if (page === 1) setIsLoading(true);
     else setIsLoadingMore(true);
@@ -109,8 +114,11 @@ const ArchiveBac = () => {
           else query = query.eq('section_id', '00000000-0000-0000-0000-000000000000'); 
       }
       
-      if (filterYear) query = query.eq('year', filterYear);
-      if (filterSubject) query = query.ilike('subject', filterSubject);
+      // TIMEOUT FIX: Ensure we use precise matching for numbers and strings
+      if (filterYear) query = query.eq('year', parseInt(filterYear));
+      
+      // TIMEOUT FIX: Switched from .ilike to .eq since dropdown values match exactly
+      if (filterSubject) query = query.eq('subject', filterSubject); 
 
       const { data, error } = await query;
       if (error) throw error;
@@ -125,15 +133,20 @@ const ArchiveBac = () => {
     }
   }, [filterYear, filterSection, filterSubject, niveaux, sections]);
 
+  // Only trigger on initial load or filter changes
   useEffect(() => {
     if (!isMetaReady) return;
     setCurrentPage(1);
     fetchExams(1, false);
   }, [isMetaReady, filterYear, filterSection, filterSubject]);
 
-  useEffect(() => {
-    if (currentPage > 1) fetchExams(currentPage, true);
-  }, [currentPage]);
+  // 3. Safe Pagination Handler (Fixes the overlapping queries)
+  const loadMore = () => {
+    if (isLoadingMore || isLoading) return;
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    fetchExams(nextPage, true);
+  };
 
   const handleFilterChange = useCallback((type: 'year' | 'subject' | 'section', value: string) => {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
@@ -190,7 +203,7 @@ const ArchiveBac = () => {
   return (
     <div className="min-h-screen bg-[#F5F7FA] py-12 px-4 md:px-8 relative" dir="rtl">
       
-      {/* PLATFORM-STYLED PDF VIEWER MODAL */}
+      {/* 🎯 OPTION 2: PLATFORM-STYLED PDF VIEWER MODAL */}
       <AnimatePresence>
         {selectedExam && (
           <motion.div 
@@ -200,7 +213,6 @@ const ArchiveBac = () => {
             <div className="bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm z-50 shrink-0 p-4">
               <div className="max-w-7xl mx-auto flex items-center justify-between" dir="ltr">
                 
-                {/* Retour Button */}
                 <button 
                   onClick={() => setSelectedExam(null)} 
                   className="flex items-center gap-2 text-slate-600 font-bold hover:text-[#09d8dd] transition-colors bg-slate-100 hover:bg-[#09d8dd]/10 px-4 py-2 rounded-xl"
@@ -209,14 +221,12 @@ const ArchiveBac = () => {
                   <span>Retour</span>
                 </button>
                 
-                {/* Center Title & Right Toggles */}
                 <div className="flex items-center gap-4">
                    <h3 className="hidden md:block font-bold text-[#082142] text-sm">
                      {selectedExam.subject} - {selectedExam.year}
                    </h3>
                    <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
                    
-                   {/* Toggle Buttons */}
                    <div className="flex p-1 bg-slate-100 rounded-xl">
                     <button 
                       onClick={() => setActiveTab('exam')} 
@@ -238,7 +248,6 @@ const ArchiveBac = () => {
               </div>
             </div>
             
-            {/* Native Iframe Body */}
             <div className="flex-1 w-full bg-[#f1f5f9] relative">
                {(!selectedExam.correction_url && activeTab === 'correction') ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
@@ -246,12 +255,21 @@ const ArchiveBac = () => {
                       <h3 className="text-lg font-bold text-slate-600">Aucun corrigé disponible</h3>
                   </div>
                ) : (
-                 <iframe 
-                    key={`${selectedExam.id}-${activeTab}`}
-                    src={`${activeTab === 'exam' ? selectedExam.pdf_url : selectedExam.correction_url}#view=FitH`} 
-                    className="w-full h-full border-none"
-                    title="PDF Viewer"
-                 />
+                 <Suspense fallback={
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 z-50">
+                        <Loader2 size={48} className="animate-spin text-[#09d8dd] mb-4"/>
+                        <p className="text-slate-500 font-medium">Chargement du document...</p>
+                    </div>
+                 }>
+                   <PDFViewerWithChat 
+                      key={`${selectedExam.id}-${activeTab}`} 
+                      pdfExercises={activeTab === 'exam' ? [{ id: 'exam', name: 'Sujet', path: selectedExam.pdf_url, data: selectedExam.pdf_url }] : []}
+                      correctionExercises={activeTab === 'correction' ? [{ id: 'corr', name: 'Correction', path: selectedExam.correction_url, data: selectedExam.correction_url }] : []}
+                      activeTab={activeTab === 'exam' ? 'exercises' : 'corrections'}
+                      initialFileId={activeTab === 'exam' ? 'exam' : 'corr'}
+                      onClose={() => setSelectedExam(null)}
+                   />
+                 </Suspense>
                )}
             </div>
           </motion.div>
@@ -385,10 +403,11 @@ const ArchiveBac = () => {
               </div>
             )}
 
+            {/* SAFE LOAD MORE BUTTON */}
             {hasMore && (
               <div className="flex justify-center mt-8">
                 <button 
-                  onClick={() => setCurrentPage(prev => prev + 1)} 
+                  onClick={loadMore} 
                   disabled={isLoadingMore}
                   className="bg-white border border-slate-200 text-[#082142] font-bold py-3 px-8 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2"
                 >
