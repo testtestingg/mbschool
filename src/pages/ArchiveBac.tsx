@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FileText, History as HistoryIcon, 
   Calendar, CheckCircle, ChevronLeft, 
-  Grid, List, BookOpen, GraduationCap, Loader2
+  Grid, List, BookOpen, GraduationCap, AlertCircle, Loader2
 } from 'lucide-react';
 
-// Crucial: Import the shared supabase instance!
 import { supabase } from '../lib/supabase';
 
 const YEARS = Array.from({ length: 37 }, (_, i) => (2026 - i).toString());
@@ -34,6 +33,10 @@ const ArchiveBac = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   
+  // PDF Viewer State (Styled exactly like the platform)
+  const [selectedExam, setSelectedExam] = useState<any | null>(null);
+  const [activeTab, setActiveTab] = useState<'exam' | 'correction'>('exam');
+
   const [viewMode, setViewMode] = useState<'table' | 'matrix'>('table');
   
   // FILTERS
@@ -43,16 +46,14 @@ const ArchiveBac = () => {
   
   const debounceTimeout = useRef<NodeJS.Timeout>();
 
-  // Load Metadata directly from Supabase
   useEffect(() => {
     const loadMeta = async () => {
       try {
         const [levelsRes, sectionsRes] = await Promise.all([
-          supabase.from('education_levels').select('*'), 
+          supabase.from('education_levels').select('*'),
           supabase.from('sections').select('*')
         ]);
 
-        // Safely filter for "Bac" levels
         const bacLevels = (levelsRes.data || []).filter(l => 
             l.name_fr?.toLowerCase().includes('bac') || 
             l.name?.toLowerCase().includes('bac')
@@ -157,14 +158,9 @@ const ArchiveBac = () => {
     return Object.values(groups).sort((a, b) => b.year - a.year);
   }, [exams]);
 
-  // NATIVE BROWSER PDF OPENER (Clean, Fast, Mobile-Friendly)
-  const openPdf = (url: string) => {
-    if (!url || url.length < 5) {
-      alert("Le fichier n'est pas encore disponible.");
-      return;
-    }
-    // Opens the PDF instantly in a new secure tab
-    window.open(url, '_blank', 'noopener,noreferrer');
+  const openViewer = (exam: any, tab: 'exam' | 'correction') => {
+    setSelectedExam(exam);
+    setActiveTab(tab);
   };
 
   const SessionButtons = ({ exam, type }: { exam: any, type: string }) => {
@@ -174,14 +170,14 @@ const ArchiveBac = () => {
     return (
       <div className="flex items-center gap-2">
         <button 
-          onClick={() => openPdf(exam.pdf_url)}
+          onClick={() => openViewer(exam, 'exam')}
           className="px-3 py-1.5 bg-slate-100 hover:bg-[#082142] hover:text-white text-slate-600 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 min-w-[80px] justify-center"
         >
           <FileText size={14}/> Sujet
         </button>
         {hasCorrection && (
           <button 
-            onClick={() => openPdf(exam.correction_url)}
+            onClick={() => openViewer(exam, 'correction')}
             className="px-3 py-1.5 bg-green-50 hover:bg-green-600 hover:text-white text-green-600 border border-green-100 hover:border-green-600 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 min-w-[80px] justify-center"
           >
             <CheckCircle size={14}/> Corrigé
@@ -194,6 +190,74 @@ const ArchiveBac = () => {
   return (
     <div className="min-h-screen bg-[#F5F7FA] py-12 px-4 md:px-8 relative" dir="rtl">
       
+      {/* PLATFORM-STYLED PDF VIEWER MODAL */}
+      <AnimatePresence>
+        {selectedExam && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+            className="fixed inset-0 z-[100] flex flex-col bg-[#F5F5F7]"
+          >
+            <div className="bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm z-50 shrink-0 p-4">
+              <div className="max-w-7xl mx-auto flex items-center justify-between" dir="ltr">
+                
+                {/* Retour Button */}
+                <button 
+                  onClick={() => setSelectedExam(null)} 
+                  className="flex items-center gap-2 text-slate-600 font-bold hover:text-[#09d8dd] transition-colors bg-slate-100 hover:bg-[#09d8dd]/10 px-4 py-2 rounded-xl"
+                >
+                  <ChevronLeft size={20} />
+                  <span>Retour</span>
+                </button>
+                
+                {/* Center Title & Right Toggles */}
+                <div className="flex items-center gap-4">
+                   <h3 className="hidden md:block font-bold text-[#082142] text-sm">
+                     {selectedExam.subject} - {selectedExam.year}
+                   </h3>
+                   <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
+                   
+                   {/* Toggle Buttons */}
+                   <div className="flex p-1 bg-slate-100 rounded-xl">
+                    <button 
+                      onClick={() => setActiveTab('exam')} 
+                      className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'exam' ? 'bg-[#082142] text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      Sujet
+                    </button>
+                    {(selectedExam.correction_url && selectedExam.correction_url.length > 5) && (
+                      <button 
+                        onClick={() => setActiveTab('correction')} 
+                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'correction' ? 'bg-green-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                      >
+                        Correction
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+            
+            {/* Native Iframe Body */}
+            <div className="flex-1 w-full bg-[#f1f5f9] relative">
+               {(!selectedExam.correction_url && activeTab === 'correction') ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
+                      <AlertCircle size={48} className="mb-4 opacity-50"/>
+                      <h3 className="text-lg font-bold text-slate-600">Aucun corrigé disponible</h3>
+                  </div>
+               ) : (
+                 <iframe 
+                    key={`${selectedExam.id}-${activeTab}`}
+                    src={`${activeTab === 'exam' ? selectedExam.pdf_url : selectedExam.correction_url}#view=FitH`} 
+                    className="w-full h-full border-none"
+                    title="PDF Viewer"
+                 />
+               )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Header & Filters */}
