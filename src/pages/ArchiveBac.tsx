@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FileText, History as HistoryIcon, 
   Calendar, CheckCircle, ChevronLeft, 
   Grid, List, BookOpen, GraduationCap, AlertCircle, Loader2, X
 } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
 
+// Crucial: Import the shared supabase instance!
+import { supabase } from '../supabase';
 
 const YEARS = Array.from({ length: 37 }, (_, i) => (2026 - i).toString());
 const ITEMS_PER_PAGE = 20;
