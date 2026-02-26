@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   FileText, History as HistoryIcon, 
   Calendar, CheckCircle, ChevronLeft, 
-  Grid, List, BookOpen, GraduationCap, AlertCircle, Loader2, X
+  Grid, List, BookOpen, GraduationCap, Loader2
 } from 'lucide-react';
 
 // Crucial: Import the shared supabase instance!
@@ -34,9 +34,6 @@ const ArchiveBac = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   
-  // Public PDF Viewer State
-  const [activePdf, setActivePdf] = useState<{ url: string, title: string, type: string } | null>(null);
-
   const [viewMode, setViewMode] = useState<'table' | 'matrix'>('table');
   
   // FILTERS
@@ -50,17 +47,17 @@ const ArchiveBac = () => {
   useEffect(() => {
     const loadMeta = async () => {
       try {
-const [levelsRes, sectionsRes] = await Promise.all([
-  supabase.from('education_levels').select('*'), // Fetch all, filter in JS
-  supabase.from('sections').select('*')
-]);
+        const [levelsRes, sectionsRes] = await Promise.all([
+          supabase.from('education_levels').select('*'), 
+          supabase.from('sections').select('*')
+        ]);
 
-// Safely filter for "Bac" levels just like your platform does
-const bacLevels = (levelsRes.data || []).filter(l => 
-    l.name_fr?.toLowerCase().includes('bac') || 
-    l.name?.toLowerCase().includes('bac')
-);
-setNiveaux(bacLevels);
+        // Safely filter for "Bac" levels
+        const bacLevels = (levelsRes.data || []).filter(l => 
+            l.name_fr?.toLowerCase().includes('bac') || 
+            l.name?.toLowerCase().includes('bac')
+        );
+        setNiveaux(bacLevels);
         setSections(sectionsRes.data || []);
       } catch (e) {
         console.error("Error loading meta:", e);
@@ -98,7 +95,7 @@ setNiveaux(bacLevels);
     try {
       let query = supabase
         .from('bac_archives')
-        .select('id, year, subject, type, section_id, pdf_url, correction_url') // Fetching URLs directly here for simplicity
+        .select('id, year, subject, type, section_id, pdf_url, correction_url') 
         .order('year', { ascending: false })
         .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1);
 
@@ -160,12 +157,14 @@ setNiveaux(bacLevels);
     return Object.values(groups).sort((a, b) => b.year - a.year);
   }, [exams]);
 
-  const openPdf = (url: string, subject: string, year: number, type: string) => {
-    if (!url) {
+  // NATIVE BROWSER PDF OPENER (Clean, Fast, Mobile-Friendly)
+  const openPdf = (url: string) => {
+    if (!url || url.length < 5) {
       alert("Le fichier n'est pas encore disponible.");
       return;
     }
-    setActivePdf({ url, title: `${subject} - ${year}`, type });
+    // Opens the PDF instantly in a new secure tab
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const SessionButtons = ({ exam, type }: { exam: any, type: string }) => {
@@ -175,14 +174,14 @@ setNiveaux(bacLevels);
     return (
       <div className="flex items-center gap-2">
         <button 
-          onClick={() => openPdf(exam.pdf_url, exam.subject, exam.year, 'Sujet')}
+          onClick={() => openPdf(exam.pdf_url)}
           className="px-3 py-1.5 bg-slate-100 hover:bg-[#082142] hover:text-white text-slate-600 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 min-w-[80px] justify-center"
         >
           <FileText size={14}/> Sujet
         </button>
         {hasCorrection && (
           <button 
-            onClick={() => openPdf(exam.correction_url, exam.subject, exam.year, 'Correction')}
+            onClick={() => openPdf(exam.correction_url)}
             className="px-3 py-1.5 bg-green-50 hover:bg-green-600 hover:text-white text-green-600 border border-green-100 hover:border-green-600 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 min-w-[80px] justify-center"
           >
             <CheckCircle size={14}/> Corrigé
@@ -195,39 +194,6 @@ setNiveaux(bacLevels);
   return (
     <div className="min-h-screen bg-[#F5F7FA] py-12 px-4 md:px-8 relative" dir="rtl">
       
-      {/* NATIVE PDF MODAL */}
-      <AnimatePresence>
-        {activePdf && (
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/80 flex flex-col backdrop-blur-sm"
-          >
-            <div className="bg-[#082142] text-white p-4 flex justify-between items-center shadow-lg">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/10 rounded-lg"><FileText size={20} /></div>
-                <div>
-                  <h3 className="font-bold text-lg leading-tight" dir="ltr">{activePdf.title}</h3>
-                  <p className="text-slate-400 text-sm">{activePdf.type}</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setActivePdf(null)}
-                className="p-2 bg-white/10 hover:bg-red-500 hover:text-white rounded-full transition-colors flex items-center gap-2"
-              >
-                <X size={24} /> <span className="hidden md:inline font-semibold ml-1">Fermer</span>
-              </button>
-            </div>
-            <div className="flex-1 w-full bg-[#f1f5f9] relative">
-               <iframe 
-                  src={`${activePdf.url}#view=FitH`} 
-                  className="w-full h-full border-none"
-                  title="PDF Viewer"
-               />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Header & Filters */}
@@ -358,7 +324,7 @@ setNiveaux(bacLevels);
             {hasMore && (
               <div className="flex justify-center mt-8">
                 <button 
-                  onClick={() => fetchExams(currentPage + 1, true)} 
+                  onClick={() => setCurrentPage(prev => prev + 1)} 
                   disabled={isLoadingMore}
                   className="bg-white border border-slate-200 text-[#082142] font-bold py-3 px-8 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2"
                 >
