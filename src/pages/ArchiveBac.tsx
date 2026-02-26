@@ -6,6 +6,7 @@ import {
   Calendar, CheckCircle, ChevronLeft, 
   Grid, List, BookOpen, GraduationCap, AlertCircle, Loader2, X
 } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase directly for the public site
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
