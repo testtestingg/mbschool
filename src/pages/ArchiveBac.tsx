@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 // Crucial: Import the shared supabase instance!
-import { supabase } from '../supabase';
+import { supabase } from '../lib/supabase';
 
 const YEARS = Array.from({ length: 37 }, (_, i) => (2026 - i).toString());
 const ITEMS_PER_PAGE = 20;
